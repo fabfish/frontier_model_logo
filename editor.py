@@ -139,7 +139,7 @@ class DraggableLogo:
         ax.add_artist(self.ab)
 
         self.label = ax.annotate(
-            f"{self.model} ({self.y}B)",
+            f"{self.model}\n({self.y}B)",
             xy=(self.x, self.y),
             xytext=tuple(self.label_offset),
             textcoords='offset points',
@@ -294,8 +294,8 @@ def build_chart():
     plt.xticks(rotation=30, ha='right')
     ax.set_ylabel("模型参数数量规模 (B)", fontsize=18)
     ax.set_xlabel("发布时间线", fontsize=18)
-    ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-07-01"))
-    ax.set_ylim(4, 3000)
+    ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-07-31"))
+    ax.set_ylim(4, 6000)
     ax.tick_params(labelsize=15)
 
     import matplotlib.patches as mpatches
@@ -438,8 +438,8 @@ class MainWindow(QMainWindow):
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%y年%m月'))
         ax.set_ylabel("模型参数数量规模 (B)", fontsize=18)
         ax.set_xlabel("发布时间线", fontsize=18)
-        ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-07-01"))
-        ax.set_ylim(4, 3000)
+        ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-07-31"))
+        ax.set_ylim(4, 6000)
         ax.tick_params(labelsize=15)
         fig.subplots_adjust(top=0.85)
 

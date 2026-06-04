@@ -268,7 +268,7 @@ for index, row in df.iterrows():
             else:
                 label_xy = (logo_xy[0], logo_xy[1] - box_half_h_pt - label_margin_pt)
 
-            ax.annotate(f"{row['Model']} ({row['Params_B']}B)",
+            ax.annotate(f"{row['Model']}\n({row['Params_B']}B)",
                         xy=(x, y),
                         xytext=label_xy,
                         textcoords='offset points',
@@ -296,9 +296,10 @@ plt.xticks(rotation=30, ha='right')
 
 ax.set_ylabel("模型参数数量规模 (B)", fontsize=18)
 ax.set_xlabel("发布时间线", fontsize=18)
-ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-06-30"))
-ax.set_ylim(4, 3000)
-fig.subplots_adjust(top=0.95)
+ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-07-31"))
+ax.set_ylim(4, 6000)
+# 让黑框（axes）尽量占满 figure，减少白边
+fig.subplots_adjust(left=0.07, right=0.98, top=0.96, bottom=0.12)
 
 import matplotlib.patches as mpatches
 intl_patch = mpatches.Patch(color='white', label='国际模型', ec='#2E5A88', lw=2)
@@ -315,7 +316,5 @@ ax.legend(handles=[intl_patch, dom_patch, trend_line, actual_dot, estimated_dot]
           edgecolor='gray', facecolor='white',
           fontsize=17, title_fontsize=18)
 
-plt.tight_layout()
-plt.subplots_adjust(bottom=0.08)
-plt.savefig("model_trend_chart.png", dpi=300, bbox_inches='tight')
+plt.savefig("model_trend_chart.png", dpi=300, bbox_inches='tight', pad_inches=0.05)
 print("✅ 图表已生成并保存为 model_trend_chart.png")
