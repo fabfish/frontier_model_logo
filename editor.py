@@ -26,6 +26,8 @@ from PyQt5.QtGui import QFont
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif'] = ['Hiragino Sans GB', 'STHeiti', 'PingFang SC', 'Arial Unicode MS', 'SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 import matplotlib.dates as mdates
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import pandas as pd
@@ -35,7 +37,7 @@ EXCEL_PATH = "model_data.xlsx"
 LOGO_DIR = "logos"
 
 # 统一的显示高度（像素），与 ref.py 保持一致
-display_target_h = 60
+display_target_h = 42
 
 # 默认 Logo 偏移（offset points）
 DEFAULT_LOGO_OFFSETS = {
@@ -49,6 +51,8 @@ DEFAULT_LOGO_OFFSETS = {
     "Claude 5": (-38, 28),
     "GPT-5.3": (22, 28),
     "GLM-6 Pro": (-5, 22),
+    "DeepSeek-V3": (-22, 25),
+    "DeepSeek-V4": (25, 25),
 }
 
 
@@ -60,10 +64,16 @@ def _px2pt(px, dpi):
     return px * 72.0 / dpi
 
 
+ESTIMATED_MODELS = {
+    'GPT-4o', 'Claude 4 Opus', 'GPT-5', 'Doubao 2.0',
+    'Gemini 3.1 Pro', 'GPT-5.5 Pro', 'Qwen 3.7 Max', 'Claude Opus 4.8'
+}
+
+
 class DraggableLogo:
     """可拖动的 Logo + 标签 + 连线组合。标签紧贴框底，连线压在框上。"""
 
-    def __init__(self, ax, row, logo_path, color, saved_cfg):
+    def __init__(self, ax, row, logo_path, color, saved_cfg, is_estimated=False):
         self.ax = ax
         self.model = row['Model']
         self.brand = row['Brand']
@@ -71,6 +81,7 @@ class DraggableLogo:
         self.y = row['Params_B']
         self.color = color
         self.logo_path = logo_path
+        self.is_estimated = is_estimated
         self.dpi = ax.figure.dpi
         self.pt_to_px = self.dpi / 72.0
 
@@ -108,7 +119,12 @@ class DraggableLogo:
             ]
 
         # ---- 创建图形元素 ----
-        self.scatter = ax.scatter(self.x, self.y, color=color, s=30, zorder=5)
+        if self.is_estimated:
+            self.scatter = ax.scatter(self.x, self.y, facecolors='none',
+                                      edgecolors=color, s=60,
+                                      linewidths=1.5, zorder=5)
+        else:
+            self.scatter = ax.scatter(self.x, self.y, color=color, s=30, zorder=5)
 
         imagebox = OffsetImage(img, zoom=self.zoom)
         self.ab = AnnotationBbox(
@@ -128,10 +144,11 @@ class DraggableLogo:
             xytext=tuple(self.label_offset),
             textcoords='offset points',
             color=color,
-            fontsize=8,
+            fontsize=12,
             ha='center',
             va='top',
-            zorder=9
+            zorder=9,
+            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='none', alpha=1.0)
         )
 
         self._update_line()
@@ -146,30 +163,30 @@ class DraggableLogo:
         return (display[0] + _pt2px(self.logo_offset[0], self.dpi),
                 display[1] + _pt2px(self.logo_offset[1], self.dpi))
 
-    def _logo_bbox_px(self):
-        cx, cy = self._logo_center_px()
-        hw = self.img_w_px / 2 + self.pad_px
-        hh = self.img_h_px / 2 + self.pad_px
-        return cx - hw, cy - hh, cx + hw, cy + hh
-
     def _update_line(self):
-        """使用 logo_offset 手动计算框底中心，避免 AnnotationBbox 位置未同步。"""
+        """使用 get_window_extent 获取实际边界框中心，连线终点指向框中心。"""
         if hasattr(self, 'line') and self.line is not None:
             self.line.remove()
 
-        pt_to_px = self.dpi / 72.0
-        display = self.ax.transData.transform((self.x, self.y))
-        offset_px = (self.logo_offset[0] * pt_to_px, self.logo_offset[1] * pt_to_px)
-        center_x = display[0] + offset_px[0]
-        center_y = display[1] + offset_px[1]
-        box_half_h_px = self.box_half_h_pt * pt_to_px
-        bottom_x = center_x
-        bottom_y = center_y - box_half_h_px
-        logo_x, logo_y = self.ax.transData.inverted().transform((bottom_x, bottom_y))
+        # 优先使用实际渲染边界框计算中心
+        try:
+            renderer = self.ax.figure.canvas.get_renderer()
+            self.ab.update_positions(renderer)
+            bbox = self.ab.get_window_extent(renderer)
+            cx = (bbox.x0 + bbox.x1) / 2.0
+            cy = (bbox.y0 + bbox.y1) / 2.0
+            logo_x, logo_y = self.ax.transData.inverted().transform((cx, cy))
+        except Exception:
+            # fallback：基于 offset 手动估算框中心
+            pt_to_px = self.dpi / 72.0
+            display = self.ax.transData.transform((self.x, self.y))
+            offset_px = (self.logo_offset[0] * pt_to_px, self.logo_offset[1] * pt_to_px)
+            logo_x, logo_y = self.ax.transData.inverted().transform(
+                (display[0] + offset_px[0], display[1] + offset_px[1]))
 
         self.line, = self.ax.plot(
             [self.x, logo_x], [self.y, logo_y],
-            color=self.color, lw=0.8, zorder=10
+            color=self.color, lw=0.8, zorder=6
         )
 
     def _connect(self):
@@ -182,26 +199,34 @@ class DraggableLogo:
     # 鼠标事件
     # ------------------------------------------------------------------
     def on_press(self, event):
-        if event.inaxes != self.ax or event.button != 1:
+        if event.button != 1:
             return
-        # 强制同步 AnnotationBbox 位置，确保 contains 判断准确
+        # 检测 Logo 框点击
+        inside = False
         try:
             renderer = self.ax.figure.canvas.get_renderer()
             self.ab.update_positions(renderer)
+            bbox = self.ab.get_window_extent(renderer)
+            inside = bbox.contains(event.x, event.y)
         except Exception:
             pass
-        inside, _ = self.ab.contains(event)
+        # 检测标签点击（点击模型名称也能拖动）
         if not inside:
-            left, bottom, right, top = self._logo_bbox_px()
-            inside = left <= event.x <= right and bottom <= event.y <= top
+            try:
+                renderer = self.ax.figure.canvas.get_renderer()
+                bbox = self.label.get_window_extent(renderer)
+                inside = bbox.contains(event.x, event.y)
+            except Exception:
+                pass
         if inside:
             self.press = (event.x, event.y,
                           self.logo_offset[0], self.logo_offset[1])
             print(f"  🖱 开始拖动 {self.model} ...")
 
     def on_motion(self, event):
-        if self.press is None or event.inaxes != self.ax:
+        if self.press is None:
             return
+        # 允许拖出 axes 范围（如拖到上方），不再检查 event.inaxes
         x0, y0, ox, oy = self.press
         dx_px = event.x - x0
         dy_px = event.y - y0
@@ -214,12 +239,13 @@ class DraggableLogo:
         self.label_offset[1] = self.logo_offset[1] + self.label_rel_y
 
         self.ab.xybox = (self.logo_offset[0], self.logo_offset[1])
-        self.label.xytext = (self.label_offset[0], self.label_offset[1])
+        self.label.set_position((self.label_offset[0], self.label_offset[1]))
 
-        # 强制更新 AnnotationBbox 内部位置
+        # 强制同步 AnnotationBbox 和 Annotation 内部位置
         try:
             renderer = self.ax.figure.canvas.get_renderer()
             self.ab.update_positions(renderer)
+            self.label.update_positions(renderer)
         except Exception:
             pass
 
@@ -250,7 +276,7 @@ class DraggableLogo:
 
 
 def build_chart():
-    plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'Heiti TC', 'SimHei']
+    plt.rcParams['font.sans-serif'] = ['Hiragino Sans GB', 'STHeiti', 'PingFang SC', 'Arial Unicode MS', 'SimHei']
     plt.rcParams['axes.unicode_minus'] = False
 
     fig, ax = plt.subplots(figsize=(14, 8))
@@ -265,19 +291,27 @@ def build_chart():
 
     ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%y年%m月'))
-    plt.xticks(rotation=0)
-    ax.set_ylabel("模型参数数量规模 (B)", fontsize=12)
-    ax.set_xlabel("发布时间线", fontsize=12)
+    plt.xticks(rotation=30, ha='right')
+    ax.set_ylabel("模型参数数量规模 (B)", fontsize=18)
+    ax.set_xlabel("发布时间线", fontsize=18)
     ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-07-01"))
     ax.set_ylim(4, 3000)
+    ax.tick_params(labelsize=15)
 
     import matplotlib.patches as mpatches
     intl_patch = mpatches.Patch(color='white', label='国际模型', ec='#2E5A88', lw=2)
     dom_patch = mpatches.Patch(color='white', label='国内模型', ec='#D8383A', lw=2)
     trend_line = plt.Line2D([0], [0], color='#00B050', lw=2, label='增长趋势')
-    ax.legend(handles=[intl_patch, dom_patch, trend_line],
-              loc='center right', title="图例", frameon=True,
-              edgecolor='gray', facecolor='white')
+    actual_dot = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='gray',
+                            markeredgecolor='gray', markersize=10, markeredgewidth=1.5,
+                            label='实际参数')
+    estimated_dot = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='none',
+                               markeredgecolor='gray', markersize=10, markeredgewidth=1.5,
+                               label='推测参数')
+    ax.legend(handles=[intl_patch, dom_patch, trend_line, actual_dot, estimated_dot],
+              loc='lower right', title="图例", frameon=True,
+              edgecolor='gray', facecolor='white',
+              fontsize=17, title_fontsize=18)
 
     return fig, ax
 
@@ -355,7 +389,8 @@ class MainWindow(QMainWindow):
                 print(f"  ⚠️ 跳过 {row['Model']}: 未找到 {logo_path}")
                 continue
 
-            item = DraggableLogo(self.ax, row, logo_path, color, saved_cfg)
+            is_estimated = row['Model'] in ESTIMATED_MODELS
+            item = DraggableLogo(self.ax, row, logo_path, color, saved_cfg, is_estimated)
             self.items.append(item)
 
         self.canvas.draw_idle()
@@ -401,17 +436,26 @@ class MainWindow(QMainWindow):
 
         ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%y年%m月'))
-        ax.set_ylabel("模型参数数量规模 (B)", fontsize=12)
-        ax.set_xlabel("发布时间线", fontsize=12)
+        ax.set_ylabel("模型参数数量规模 (B)", fontsize=18)
+        ax.set_xlabel("发布时间线", fontsize=18)
         ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-07-01"))
         ax.set_ylim(4, 3000)
+        ax.tick_params(labelsize=15)
+        fig.subplots_adjust(top=0.85)
 
         intl_patch = mpatches.Patch(color='white', label='国际模型', ec='#2E5A88', lw=2)
         dom_patch = mpatches.Patch(color='white', label='国内模型', ec='#D8383A', lw=2)
         trend_line = plt.Line2D([0], [0], color='#00B050', lw=2, label='增长趋势')
-        ax.legend(handles=[intl_patch, dom_patch, trend_line],
-                  loc='center right', title="图例", frameon=True,
-                  edgecolor='gray', facecolor='white')
+        actual_dot = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='gray',
+                                markeredgecolor='gray', markersize=10, markeredgewidth=1.5,
+                                label='实际参数')
+        estimated_dot = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='none',
+                                   markeredgecolor='gray', markersize=10, markeredgewidth=1.5,
+                                   label='推测参数')
+        ax.legend(handles=[intl_patch, dom_patch, trend_line, actual_dot, estimated_dot],
+                  loc='lower right', title="图例", frameon=True,
+                  edgecolor='gray', facecolor='white',
+                  fontsize=17, title_fontsize=18)
 
     def save_and_quit(self):
         print(f"\n✅ 所有偏移已保存到 {CONFIG_PATH}")

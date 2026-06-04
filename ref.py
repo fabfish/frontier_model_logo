@@ -16,6 +16,8 @@ import matplotlib
 matplotlib.use('Agg')
 import pandas as pd
 import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif'] = ['Hiragino Sans GB', 'STHeiti', 'PingFang SC', 'Arial Unicode MS', 'SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 import matplotlib.dates as mdates
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import requests
@@ -127,26 +129,29 @@ def download_or_generate_logo(logo_url, brand, logo_dir, color):
 
 # ---------------- 1. 准备数据并保存为 xlsx ----------------
 data = [
-    {"Model": "GPT-4o", "Date": "2024-05-15", "Params_B": 1800, "Type": "International", "Brand": "OpenAI", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg"},
-    {"Model": "Step-2", "Date": "2024-07-15", "Params_B": 1000, "Type": "Domestic", "Brand": "Step", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/stepfun-color.png"},
-    {"Model": "MiniCPM-V", "Date": "2024-08-15", "Params_B": 8, "Type": "Domestic", "Brand": "CPM", "Logo_URL": "https://avatars.githubusercontent.com/u/89920319?s=400&v=4"},
-    {"Model": "Qwen2.5-VL", "Date": "2024-09-15", "Params_B": 72, "Type": "Domestic", "Brand": "Qwen", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/qwen-color.png"},
-    {"Model": "DeepSeek-VL2", "Date": "2024-10-15", "Params_B": 27, "Type": "Domestic", "Brand": "DeepSeek", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/deepseek-color.png"},
-    {"Model": "Claude 4 Opus", "Date": "2025-01-20", "Params_B": 1000, "Type": "International", "Brand": "Anthropic", "Logo_URL": "https://dl.svgcdn.com/svg/logos/anthropic-icon.svg"},
-    {"Model": "Llama 4 Maverick", "Date": "2025-02-15", "Params_B": 400, "Type": "International", "Brand": "Meta", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg"},
-    {"Model": "Llama 4 Scout", "Date": "2025-02-15", "Params_B": 109, "Type": "International", "Brand": "Meta", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg"},
-    {"Model": "GPT-5", "Date": "2025-03-15", "Params_B": 1500, "Type": "International", "Brand": "OpenAI", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg"},
-    {"Model": "InternVL 3.0", "Date": "2025-04-15", "Params_B": 78, "Type": "Domestic", "Brand": "InternVL", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/internlm-color.png"},
-    {"Model": "InternVL 3.5", "Date": "2025-05-15", "Params_B": 241, "Type": "Domestic", "Brand": "InternVL", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/internlm-color.png"},
-    {"Model": "Kimi K2.5", "Date": "2025-08-15", "Params_B": 1000, "Type": "Domestic", "Brand": "Kimi", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/kimi-color.png"},
-    {"Model": "Qwen3-VL", "Date": "2025-08-15", "Params_B": 235, "Type": "Domestic", "Brand": "Qwen", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/qwen-color.png"},
-    {"Model": "Gemini 3.1 Pro", "Date": "2025-09-15", "Params_B": 1000, "Type": "International", "Brand": "Google", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"},
-    {"Model": "GLM-5", "Date": "2025-10-15", "Params_B": 744, "Type": "Domestic", "Brand": "GLM", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/zhipu-color.png"},
-    {"Model": "Qwen3.5", "Date": "2025-11-15", "Params_B": 397, "Type": "Domestic", "Brand": "Qwen", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/qwen-color.png"},
-    {"Model": "Doubao 2.0", "Date": "2025-12-15", "Params_B": 500, "Type": "Domestic", "Brand": "Doubao", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/doubao-color.png"},
-    {"Model": "Claude 5", "Date": "2026-03-15", "Params_B": 1200, "Type": "International", "Brand": "Anthropic", "Logo_URL": "https://dl.svgcdn.com/svg/logos/anthropic-icon.svg"},
-    {"Model": "GPT-5.3", "Date": "2026-04-15", "Params_B": 1500, "Type": "International", "Brand": "OpenAI", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg"},
-    {"Model": "GLM-6 Pro", "Date": "2026-05-15", "Params_B": 1000, "Type": "Domestic", "Brand": "GLM", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/zhipu-color.png"}
+    {"Model": "GPT-4o", "Date": "2024-05-13", "Params_B": 200, "Type": "International", "Brand": "OpenAI", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg", "Params_Verified": False},
+    {"Model": "Step-2", "Date": "2024-07-04", "Params_B": 1000, "Type": "Domestic", "Brand": "Step", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/stepfun-color.png", "Params_Verified": True},
+    {"Model": "MiniCPM-V", "Date": "2024-08-15", "Params_B": 8, "Type": "Domestic", "Brand": "CPM", "Logo_URL": "https://avatars.githubusercontent.com/u/89920319?s=400&v=4", "Params_Verified": True},
+    {"Model": "DeepSeek-VL2", "Date": "2024-12-13", "Params_B": 27, "Type": "Domestic", "Brand": "DeepSeek", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/deepseek-color.png", "Params_Verified": True},
+    {"Model": "DeepSeek-V3", "Date": "2024-12-26", "Params_B": 671, "Type": "Domestic", "Brand": "DeepSeek", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/deepseek-color.png", "Params_Verified": True},
+    {"Model": "Qwen2.5-VL", "Date": "2025-01-28", "Params_B": 72, "Type": "Domestic", "Brand": "Qwen", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/qwen-color.png", "Params_Verified": True},
+    {"Model": "Llama 4 Maverick", "Date": "2025-04-05", "Params_B": 400, "Type": "International", "Brand": "Meta", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg", "Params_Verified": True},
+    {"Model": "Llama 4 Scout", "Date": "2025-04-05", "Params_B": 109, "Type": "International", "Brand": "Meta", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg", "Params_Verified": True},
+    {"Model": "Claude 4 Opus", "Date": "2025-05-22", "Params_B": 1000, "Type": "International", "Brand": "Anthropic", "Logo_URL": "https://dl.svgcdn.com/svg/logos/anthropic-icon.svg", "Params_Verified": False},
+    {"Model": "InternVL 3.0", "Date": "2025-04-15", "Params_B": 78, "Type": "Domestic", "Brand": "InternVL", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/internlm-color.png", "Params_Verified": True},
+    {"Model": "GPT-5", "Date": "2025-08-07", "Params_B": 1500, "Type": "International", "Brand": "OpenAI", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg", "Params_Verified": False},
+    {"Model": "InternVL 3.5", "Date": "2025-09-03", "Params_B": 241, "Type": "Domestic", "Brand": "InternVL", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/internlm-color.png", "Params_Verified": True},
+    {"Model": "Qwen3-VL", "Date": "2025-09-23", "Params_B": 235, "Type": "Domestic", "Brand": "Qwen", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/qwen-color.png", "Params_Verified": True},
+    {"Model": "Kimi K2.5", "Date": "2026-01-27", "Params_B": 1000, "Type": "Domestic", "Brand": "Kimi", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/kimi-color.png", "Params_Verified": True},
+    {"Model": "GLM-5", "Date": "2026-02-11", "Params_B": 744, "Type": "Domestic", "Brand": "GLM", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/zhipu-color.png", "Params_Verified": True},
+    {"Model": "Doubao 2.0", "Date": "2026-02-14", "Params_B": 500, "Type": "Domestic", "Brand": "Doubao", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/doubao-color.png", "Params_Verified": False},
+    {"Model": "Qwen3.5", "Date": "2026-02-16", "Params_B": 397, "Type": "Domestic", "Brand": "Qwen", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/qwen-color.png", "Params_Verified": True},
+    {"Model": "Gemini 3.1 Pro", "Date": "2026-02-19", "Params_B": 1000, "Type": "International", "Brand": "Google", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg", "Params_Verified": False},
+    {"Model": "MiniMax M2.7", "Date": "2026-04-12", "Params_B": 230, "Type": "Domestic", "Brand": "MiniMax", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/minimax-color.png", "Params_Verified": True},
+    {"Model": "GPT-5.5 Pro", "Date": "2026-04-23", "Params_B": 1800, "Type": "International", "Brand": "OpenAI", "Logo_URL": "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg", "Params_Verified": False},
+    {"Model": "DeepSeek-V4", "Date": "2026-04-24", "Params_B": 1600, "Type": "Domestic", "Brand": "DeepSeek", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/deepseek-color.png", "Params_Verified": True},
+    {"Model": "Qwen 3.7 Max", "Date": "2026-05-20", "Params_B": 500, "Type": "Domestic", "Brand": "Qwen", "Logo_URL": "https://unpkg.com/@lobehub/icons-static-png@latest/light/qwen-color.png", "Params_Verified": False},
+    {"Model": "Claude Opus 4.8", "Date": "2026-05-28", "Params_B": 1200, "Type": "International", "Brand": "Anthropic", "Logo_URL": "https://dl.svgcdn.com/svg/logos/anthropic-icon.svg", "Params_Verified": False}
 ]
 
 excel_path = "model_data.xlsx"
@@ -183,6 +188,7 @@ fig, ax = plt.subplots(figsize=(14, 8))
 ax.set_yscale('log')
 ax.set_yticks([5, 10, 50, 100, 500, 1000, 2000])
 ax.get_yaxis().set_major_formatter(plt.ScalarFormatter())
+ax.tick_params(labelsize=15)
 
 # 趋势线
 trend_dates = pd.to_datetime(["2024-08-01", "2026-04-15"])
@@ -214,14 +220,17 @@ logo_offsets = {
 }
 
 # 统一的显示高度（像素），所有 Logo 按此高度动态 zoom
-display_target_h = 60
+display_target_h = 42
 
 for index, row in df.iterrows():
     color = '#2E5A88' if row['Type'] == 'International' else '#D8383A'
     x = mdates.date2num(row['Date'])
     y = row['Params_B']
 
-    ax.scatter(x, y, color=color, s=30, zorder=5)
+    if row.get('Params_Verified', True):
+        ax.scatter(x, y, color=color, s=30, zorder=5)
+    else:
+        ax.scatter(x, y, facecolor='none', edgecolor=color, s=30, linewidth=1.5, zorder=5)
 
     model = row['Model']
     cfg = saved_offsets.get(model, {})
@@ -252,7 +261,7 @@ for index, row in df.iterrows():
             # 标签紧贴框底
             pt_to_px = fig.dpi / 72.0
             box_half_h_pt = display_target_h / 2 + 3   # 图片半高 + pad(3pt)
-            label_margin_pt = 2
+            label_margin_pt = 6
 
             if 'label' in cfg:
                 label_xy = tuple(cfg['label'])
@@ -264,41 +273,47 @@ for index, row in df.iterrows():
                         xytext=label_xy,
                         textcoords='offset points',
                         color=color,
-                        fontsize=8,
+                        fontsize=12,
                         ha='center',
                         va='top',
-                        zorder=9)
+                        zorder=9,
+                        bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='none', alpha=1.0))
 
-            # 连线：终点在框底部外边缘，zorder=10 压在框上
+            # 连线：终点在 Logo 框中心，zorder=6 位于 Logo 框和标签下方
             display = ax.transData.transform((x, y))
             offset_px = (logo_xy[0] * pt_to_px, logo_xy[1] * pt_to_px)
             center_x = display[0] + offset_px[0]
             center_y = display[1] + offset_px[1]
-            box_half_h_px = box_half_h_pt * pt_to_px
-            bottom_x = center_x
-            bottom_y = center_y - box_half_h_px
-            logo_x, logo_y = ax.transData.inverted().transform((bottom_x, bottom_y))
-            ax.plot([x, logo_x], [y, logo_y], color=color, lw=0.8, zorder=10)
+            logo_x, logo_y = ax.transData.inverted().transform((center_x, center_y))
+            ax.plot([x, logo_x], [y, logo_y], color=color, lw=0.8, zorder=6)
 
         except Exception:
             pass
 
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%y年%m月'))
-plt.xticks(rotation=0)
+plt.xticks(rotation=30, ha='right')
 
-ax.set_ylabel("模型参数数量规模 (B)", fontsize=12)
-ax.set_xlabel("发布时间线", fontsize=12)
-ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-07-01"))
+ax.set_ylabel("模型参数数量规模 (B)", fontsize=18)
+ax.set_xlabel("发布时间线", fontsize=18)
+ax.set_xlim(pd.to_datetime("2024-04-01"), pd.to_datetime("2026-06-30"))
 ax.set_ylim(4, 3000)
+fig.subplots_adjust(top=0.95)
 
 import matplotlib.patches as mpatches
 intl_patch = mpatches.Patch(color='white', label='国际模型', ec='#2E5A88', lw=2)
 dom_patch = mpatches.Patch(color='white', label='国内模型', ec='#D8383A', lw=2)
 trend_line = plt.Line2D([0], [0], color='#00B050', lw=2, label='增长趋势')
-ax.legend(handles=[intl_patch, dom_patch, trend_line],
-          loc='center right', title="图例", frameon=True,
-          edgecolor='gray', facecolor='white')
+actual_dot = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='gray',
+                         markeredgecolor='gray', markersize=10, markeredgewidth=1.5,
+                         label='实际参数')
+estimated_dot = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='none',
+                           markeredgecolor='gray', markersize=10, markeredgewidth=1.5,
+                           label='推测参数')
+ax.legend(handles=[intl_patch, dom_patch, trend_line, actual_dot, estimated_dot],
+          loc='lower right', title="图例", frameon=True,
+          edgecolor='gray', facecolor='white',
+          fontsize=17, title_fontsize=18)
 
 plt.tight_layout()
 plt.subplots_adjust(bottom=0.08)
